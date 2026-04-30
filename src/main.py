@@ -19,10 +19,6 @@ while True:
     docs = [doc for doc, score in results]
     answer = answer_question(query, docs)
 
-    print("\n--- Retrieved Documents ---")
-    for doc, score in results:
-        print(f"\nScore: {score:.4f}")
-        print(doc)
-
     print("\n--- LLM Answer ---")
     print(answer)
+    print("\n")

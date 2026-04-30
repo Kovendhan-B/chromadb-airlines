@@ -1,12 +1,22 @@
 
+import logging
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-model_name = "google/flan-t5-base"
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+model_name = os.getenv("MODEL_NAME", "google/flan-t5-base")
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-from transformers import AutoConfig
-config = AutoConfig.from_pretrained(model_name)
-config.tie_word_embeddings = False
+_hf_logger = logging.getLogger("transformers.modeling_utils")
+_tie_filter = type(
+    "_TieFilter", (logging.Filter,),
+    {"filter": lambda self, r: "tie_word_embeddings" not in r.getMessage()}
+)()
+_hf_logger.addFilter(_tie_filter)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+_hf_logger.removeFilter(_tie_filter)
 
 def answer_question(query, docs, max_length=200):
 	"""
@@ -18,12 +28,14 @@ def answer_question(query, docs, max_length=200):
 	Returns:
 		str: The generated answer.
 	"""
+	
+	docs = docs[:3]
 	context = "\n".join(docs)
 	prompt = (
     f"Context:\n{context}\n\n"
     f"Question: {query}\n"
-    "Answer using only the context above. If the answer is not in the context, say 'I don't know.'\nAnswer:")
-	inputs = tokenizer(prompt, return_tensors="pt")
+    "Based on the context, answer the question as best as you can. If you truly cannot answer, say 'I don't know.''\nAnswer:")
+	inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
 	outputs = model.generate(**inputs, max_length=max_length)
 	response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 	return response

@@ -1,8 +1,16 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 import polars as pl
 from db import get_collections
 
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", 5000))
+DATA_PATH = Path(__file__).parent.parent / "db" / "data" / "Airline_Reviews_Combined.xlsx"
+
 def ingest_data():
-    df = pl.read_excel("db/data/Airline_Reviews_Combined.xlsx")
+    df = pl.read_excel(DATA_PATH)
     print("[Ingest] Starting data ingestion...")
     collections = get_collections()
 
@@ -23,7 +31,6 @@ def ingest_data():
             print(f"[Ingest] Processed {i + 1}/{total} rows...")
 
     print("[Ingest] Upserting data into collection...")
-    BATCH_SIZE = 5000  # Use a value less than or equal to 5461
 
     for start in range(0, total, BATCH_SIZE):
         end = min(start + BATCH_SIZE, total)
@@ -33,7 +40,4 @@ def ingest_data():
             documents=docs[start:end],
             metadatas=metadatas[start:end]
         )
-        print("[Ingest] Ingestion complete.")
-
-    
-    
+    print("[Ingest] Ingestion complete.")  # ✅ moved outside the loop
