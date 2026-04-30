@@ -1,28 +1,47 @@
 # Chroma Airlines Review Search
 
-This project lets you search through airline reviews using AI-powered search with ChromaDB.
+Search through airline reviews using natural language. Ask a question, get an AI-generated answer backed by real review data.
 
-## How to Use
+## How it works
 
-1. **Install dependencies**
-   - Make sure you have Python 3.8+
-   - Install requirements: `pip install -r requirements.txt` 
-2. **Ingest Data (optional)**
-   - If you want to add new data, run the ingestion part in `src/main.py` (uncomment the relevant line).
+1. Your question is matched against airline reviews stored in ChromaDB (semantic search)
+2. The top results are passed as context to a local Flan-T5 model
+3. The model generates a concise answer
 
-3. **Search Reviews**
-   - Run: `python src/main.py`
-   - Enter your search query when prompted.
-   - The app will show the most relevant airline reviews.
+## Setup
+
+```bash
+uv sync          # install dependencies
+cp .env.example .env   # configure settings (model, batch size, etc.)
+```
+
+Run it:
+```bash
+python src/main.py
+```
+
+## Config (`.env`)
+
+| Key | Default | What it does |
+|---|---|---|
+| `MODEL_NAME` | `google/flan-t5-base` | HuggingFace model to use |
+| `N_RESULTS` | `5` | Reviews fetched per query |
+| `BATCH_SIZE` | `5000` | Rows per upsert during ingestion |
 
 ## Project Structure
-- `src/` — Main code (ingest, search, database setup)
-- `db/` — Database files (not tracked in git)
-- `main.py` — Entry point
 
-## Notes
-- The database file (`db/chroma.sqlite3`) is ignored by git.
-- For large datasets, use batch ingestion for better performance.
+```
+src/
+  main.py    — REPL loop (entry point)
+  query.py   — semantic search via ChromaDB
+  llm.py     — answer generation via Flan-T5
+  ingest.py  — loads Excel data into ChromaDB
+  db.py      — ChromaDB client (singleton)
+db/
+  data/      — source Excel file
+  *.sqlite3  — ChromaDB store (not in git)
+```
 
----
+## Re-ingesting data
 
+Uncomment `ingest_data()` in `src/main.py` and run once.
