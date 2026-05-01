@@ -9,6 +9,7 @@ dependencies = [
     "fastexcel>=0.20.1",
     "polars>=1.40.1",
     "python-dotenv>=1.2.2",
+    "streamlit>=1.57.0",
     "torch>=2.11.0",
     "transformers>=5.7.0",
 ]
