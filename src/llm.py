@@ -34,7 +34,8 @@ def answer_question(query, docs, max_length=200):
 	prompt = (
     f"Context:\n{context}\n\n"
     f"Question: {query}\n"
-    "Based on the context, answer the question as best as you can. If you truly cannot answer, say 'I don't know.''\nAnswer:")
+    "Provide a brief, structured answer. If possible, use bullet points for clarity."
+	)
 	inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
 	outputs = model.generate(**inputs, max_length=max_length)
 	response = tokenizer.decode(outputs[0], skip_special_tokens=True)

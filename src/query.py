@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from db import get_collections
+from src.db import get_collections
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -19,4 +19,4 @@ def search(query: str):
     docs = results["documents"][0]
     distances = results["distances"][0]
 
-    return list(zip(docs, distances))
+    return list(zip(docs, distances))
